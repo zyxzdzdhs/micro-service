@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
+	grpcserver "google.golang.org/grpc"
 	"log"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"ride-sharing/services/trip-service/internal/domain"
@@ -14,47 +15,41 @@ import (
 	"time"
 )
 
-func main() {
-	ctx := context.Background()
-	fare := &domain.RideFareModel{
-		UserID: "42",
-	}
+var GrpcAddr = ":9093"
 
+func main() {
 	memRepo := repository.NewInmemRepository()
 	svc := service.NewService(memRepo)
-	mux := http.NewServeMux()
-	svc.CreateTrip(ctx, fare)
-	httpHandler := h.HttpHandler{Service: svc}
 
-	mux.HandleFunc("POST /trip/preview", httpHandler.HandleTripPreview)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	server := &http.Server{
-		Addr:    ":8083",
-		Handler: mux,
-	}
-
-	serverErrors := make(chan error, 1)
-
+	// 创建携程等待系统调用的终止信号，转发到sigCh中并调用取消信号
 	go func() {
-		log.Printf("Server listening on %s", ":8083")
-		serverErrors <- server.ListenAndServe()
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+		<-sigCh
+		cancel()
 	}()
 
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
-
-	select {
-	case err := <-serverErrors:
-		log.Printf("Error starting the server: %v", err)
-	case sig := <-shutdown:
-		log.Printf("Server is shutting down due to %v signal", sig)
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		if err := server.Shutdown(ctx); err != nil {
-			log.Printf("Could not shut down the server gracefully: %v", err)
-			server.Close()
-		}
+	lis, err := net.Listen("tcp", GrpcAddr)
+	if err != nil {
+		log.Fatal("failed to listen: %v", err)
 	}
+
+	grpcServer := grpcserver.NewServer()
+
+	log.Printf("Starting grpc server Trip service on port %s", lis.Addr().String())
+
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Printf("failed to server: %v", err)
+			cancel()
+		}
+	}()
+
+	// 当调用取消后，GRPC服务器会优雅关闭
+	<-ctx.Done()
+	log.Printf("Shutting down the server...")
+	grpcServer.GracefulStop()
 }
