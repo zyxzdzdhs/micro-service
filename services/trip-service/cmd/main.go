@@ -7,12 +7,10 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"ride-sharing/services/trip-service/internal/domain"
-	h "ride-sharing/services/trip-service/internal/infrastructure/http"
+	grpc "ride-sharing/services/trip-service/internal/infrastructure/grpc"
 	"ride-sharing/services/trip-service/internal/infrastructure/repository"
 	"ride-sharing/services/trip-service/internal/service"
 	"syscall"
-	"time"
 )
 
 var GrpcAddr = ":9093"
@@ -37,7 +35,9 @@ func main() {
 		log.Fatal("failed to listen: %v", err)
 	}
 
+	// 开始GRPC SERVER
 	grpcServer := grpcserver.NewServer()
+	grpc.NewGRPCHandler(grpcServer, svc)
 
 	log.Printf("Starting grpc server Trip service on port %s", lis.Addr().String())
 

@@ -5,9 +5,9 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: trip-service
-  template:
+    matchLabels: ## 通过标签选择器管理POD
+      app: trip-service ## 只管理带这个标签的POD
+  template: ##指定了POD的蓝图，结构是怎么样的
     metadata:
       labels:
         app: trip-service

@@ -26,10 +26,15 @@ func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tripService.Close()
 
-	tripService.Client.PreviewTrip()
+	tripPreview, err := tripService.Client.PreviewTrip(r.Context(), reqBody.toProto())
+	if err != nil {
+		log.Printf("Failed to preview a trip: %v", err)
+		http.Error(w, "Failed to preview trip", http.StatusInternalServerError)
+		return
+	}
 
 	response := contracts.APIResponse{
-		Data: "OK",
+		Data: tripPreview,
 	}
 	writeJSON(w, http.StatusCreated, response)
 }
