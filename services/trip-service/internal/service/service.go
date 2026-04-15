@@ -73,7 +73,7 @@ func (svc *Service) EstimatePackagesPriceWithRoute(route *types.OsrmApiResource)
 	return estimatedFares
 }
 
-func (svc *Service) GenerateTripFares(ctx context.Context, rdieFares []*domain.RideFareModel, userID string) ([]*domain.RideFareModel, error) {
+func (svc *Service) GenerateTripFares(ctx context.Context, rdieFares []*domain.RideFareModel, userID string, route *types.OsrmApiResource) ([]*domain.RideFareModel, error) {
 	fares := make([]*domain.RideFareModel, len(rdieFares))
 
 	for i, f := range rdieFares {
@@ -83,7 +83,7 @@ func (svc *Service) GenerateTripFares(ctx context.Context, rdieFares []*domain.R
 			ID:                id,
 			TotalPriceInCents: f.TotalPriceInCents,
 			PackageSlug:       f.PackageSlug,
-			Route:             f.Route,
+			Route:             route,
 		}
 		if err := svc.repo.SaveRideFare(ctx, fare); err != nil {
 			return nil, fmt.Errorf("failed to save trip fare %w", err)
@@ -95,7 +95,7 @@ func (svc *Service) GenerateTripFares(ctx context.Context, rdieFares []*domain.R
 	return fares, nil
 }
 
-func (svc *Service) GetAndValidateFare(ctx context.Context, fareID, userID string, route *types.OsrmApiResource) (*domain.RideFareModel, error) {
+func (svc *Service) GetAndValidateFare(ctx context.Context, fareID, userID string) (*domain.RideFareModel, error) {
 	fare, err := svc.repo.GetRideFareByID(ctx, fareID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get trip fare: %v", err)

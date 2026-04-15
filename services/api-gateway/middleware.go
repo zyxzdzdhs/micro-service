@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-func enableCORES(handler http.HandlerFunc) http.HandlerFunc {
+func enableCORS(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, PUT, DELETE, GET, OPTIONS")
