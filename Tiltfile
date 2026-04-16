@@ -84,7 +84,7 @@ k8s_resource('web', port_forwards=3000, labels="frontend")
 ### End of Web Frontend ###
 ### driver Service ###
 
-trip_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/driver-service ./services/driver-service/cmd/main.go'
+trip_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/driver-service ./services/driver-service'
 if os.name == 'nt':
  trip_compile_cmd = './infra/development/docker/trip-build.bat'
 
