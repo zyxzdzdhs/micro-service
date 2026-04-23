@@ -2,17 +2,19 @@ package main
 
 import (
 	"context"
-	grpcserver "google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+	"ride-sharing/services/trip-service/internal/infrastructure/events"
 	grpc "ride-sharing/services/trip-service/internal/infrastructure/grpc"
 	"ride-sharing/services/trip-service/internal/infrastructure/repository"
 	"ride-sharing/services/trip-service/internal/service"
 	"ride-sharing/shared/env"
 	"ride-sharing/shared/messaging"
 	"syscall"
+
+	grpcserver "google.golang.org/grpc"
 )
 
 var GrpcAddr = ":9093"
@@ -46,9 +48,12 @@ func main() {
 	}
 	defer rmq.Close()
 
+	// 创建生产者
+	publisher := events.NewTripEventPublisher(rmq)
+
 	// 开始GRPC SERVER
 	grpcServer := grpcserver.NewServer()
-	grpc.NewGRPCHandler(grpcServer, svc)
+	grpc.NewGRPCHandler(grpcServer, svc, publisher)
 
 	log.Printf("Starting grpc server Trip service on port %s", lis.Addr().String())
 

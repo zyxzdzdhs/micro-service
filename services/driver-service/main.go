@@ -42,6 +42,14 @@ func main() {
 	}
 	defer rmq.Close()
 
+	// 创建消费者
+	consumer := NewTripConsumer(rmq, service)
+	go func() {
+		if err := consumer.Listen(); err != nil {
+			log.Fatalf("Failed to listen to the message: %v", err)
+		}
+	}()
+
 	// 开始GRPC SERVER
 	grpcServer := grpcserver.NewServer()
 	NewGrpcHandler(grpcServer, service)
