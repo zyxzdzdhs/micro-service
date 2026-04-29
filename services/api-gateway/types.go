@@ -5,6 +5,14 @@ import (
 	"ride-sharing/shared/types"
 )
 
+type Driver struct {
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	ProfileImage string `json:"profilePicture"`
+	CarPlate     string `json:"carPlate"`
+	PackageSlug  string `json:"packageSlug"`
+}
+
 type previewTripRequest struct {
 	UserID      string           `json:"userID"`
 	PickUp      types.Coordinate `json:"pickup"`

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/messaging"

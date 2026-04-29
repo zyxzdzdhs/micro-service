@@ -51,6 +51,10 @@ func main() {
 	// 创建生产者
 	publisher := events.NewTripEventPublisher(rmq)
 
+	// 创建driver consumer, 这个消费的是网关收到前端DRIVER的WS响应后写入RABBITMQ的动作
+	driverConsumer := events.NewDriverConsumer(rmq, svc)
+	go driverConsumer.Listen()
+
 	// 开始GRPC SERVER
 	grpcServer := grpcserver.NewServer()
 	grpc.NewGRPCHandler(grpcServer, svc, publisher)
