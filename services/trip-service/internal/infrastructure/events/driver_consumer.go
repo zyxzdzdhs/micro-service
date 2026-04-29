@@ -9,8 +9,7 @@ import (
 	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/messaging"
 	pb "ride-sharing/shared/proto/driver"
-	pbTrip "ride-sharing/shared/proto/trip"
-	"ride-sharing/shared/retry"
+	// pbTrip "ride-sharing/shared/proto/trip"
 
 	"github.com/rabbitmq/amqp091-go"
 )
